@@ -1,0 +1,19 @@
+version: 0.2
+
+phases:
+  pre-build:
+    commands:
+      - $(aws ecr get-login --no-include-email --region us-east-1)
+
+  build:
+    commands:
+      - docker build -t fargate-test .
+      - docker tag <IMAGE-NAME> <ECR-URL>
+  
+  post_build:
+    commands:
+      - docker push <aws-account-ID>.dkr.ecr.us-east-1.amazonaws.com/fargate-test:latest
+      - printf '[{"name":<TASK_DEFINITION_NAME>,"imageUri":"%s"}]' <ECR_URL> > imagedefinitions.json
+
+artifacts:
+  files: imagedefinitions.json
